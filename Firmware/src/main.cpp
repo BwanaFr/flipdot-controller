@@ -12,11 +12,6 @@
 //Screen
 #include "screen.h"
 
-//Buildin RGB led
-#define LEDS_COUNT 1
-#define LEDS_PIN 4
-#define CHANNEL 0
-
 Freenove_ESP32_WS2812 strip = Freenove_ESP32_WS2812(LEDS_COUNT, LEDS_PIN, CHANNEL, TYPE_GRB);
 
 HardwareSerial serial485(2);
@@ -28,7 +23,7 @@ ESPEasyCfg captivePortal(&server, "FlipDot");
 
 void WS2812Task(void *params);
 
-size_t otaContentLenght;                    // Size of the OTA update file
+static size_t otaContentLenght=0;                    // Size of the OTA update file
 
 /**
  * Sets the screen backlight on
@@ -100,8 +95,8 @@ void setup_ota_update() {
     [](AsyncWebServerRequest *request) {},
     [](AsyncWebServerRequest *request, const String& filename, size_t index, uint8_t *data, size_t len, bool final) {
                     if (!index){
-                      Serial.println("Update");
                       otaContentLenght = request->contentLength();
+                      Serial.printf("Update with lenght of %d bytes\n", otaContentLenght);
                       // if filename includes spiffs, update the spiffs partition
                       int cmd = (filename.indexOf("spiffs") > -1) ? U_SPIFFS : U_FLASH;
                       if (!Update.begin(otaContentLenght, cmd)) {
@@ -150,17 +145,23 @@ void setup_screen_endpoints(){
     screen.sendText(text.c_str(), std::atoi(x.c_str()), std::atoi(y.c_str()));
     request->send(200, "text/plain", "X: " + x + " Y: " + y + " Text : " + text);
   });
+
   //Raw binary data (for tests)
   AsyncCallbackJsonWebHandler* handler = new AsyncCallbackJsonWebHandler("/raw", [](AsyncWebServerRequest *request, JsonVariant &json) {
     JsonArrayConst jsonObj = json.as<JsonArrayConst>();
+    uint8_t* data = new uint8_t[jsonObj.size()];
+    int i=0;
     for(JsonVariantConst v : jsonObj) {
-        Serial.println(v.as<int>());
+      data[i++] = v.as<uint8_t>();
     }
+    screen.sendRaw(data, jsonObj.size());
+    delete[] data;
     request->send(200, "text/plain", "ok");
-  });
+  }, 4096);
   handler->setMethod(HTTP_POST);
   server.addHandler(handler);
 
+  //Sets backlight on/off
   server.on("/backlight", HTTP_GET, [] (AsyncWebServerRequest *request) {
     bool blOn = false;
     if(request->hasParam("on")){
@@ -175,6 +176,7 @@ void setup_screen_endpoints(){
     request->send(200, "text/plain", "Backlight is " + blOnText);
   });
 
+  //Sets the screen power-supply on/off
   server.on("/screen", HTTP_GET, [] (AsyncWebServerRequest *request) {
     bool scrOn = false;
     if(request->hasParam("on")){
@@ -192,31 +194,36 @@ void setup_screen_endpoints(){
 
 void setup()
 {
-    pinMode(RS485_EN_PIN, OUTPUT);
-    digitalWrite(RS485_EN_PIN, HIGH);
+  Serial.begin(115200);
 
-    pinMode(RS485_SE_PIN, OUTPUT);
-    digitalWrite(RS485_SE_PIN, HIGH);
+  //Enable RS485 transceiver
+  pinMode(RS485_EN_PIN, OUTPUT);
+  digitalWrite(RS485_EN_PIN, HIGH);
 
-    pinMode(PIN_5V_EN, OUTPUT);
-    digitalWrite(PIN_5V_EN, HIGH);
+  pinMode(RS485_SE_PIN, OUTPUT);
+  digitalWrite(RS485_SE_PIN, HIGH);
 
-    pinMode(SCREEN_PWR_PIN, OUTPUT);
-    pinMode(BACKLIGHT_PWR_PIN, OUTPUT);
-    backLightOff();
-    screenOn();
+  pinMode(PIN_5V_EN, OUTPUT);
+  digitalWrite(PIN_5V_EN, HIGH);
 
-    Serial.begin(115200);
+  //Setup relays for switching power
+  pinMode(SCREEN_PWR_PIN, OUTPUT);
+  pinMode(BACKLIGHT_PWR_PIN, OUTPUT);
+  //Sets backlight off
+  backLightOff();
+  //Enable screen
+  screenOn();
+  //Setup screen
+  screen.begin(RS485_RX_PIN, RS485_TX_PIN);
 
-    setup_ota_update();
-    setup_screen_endpoints();
-    captive_portal_setup();
-
-    screen.begin(RS485_RX_PIN, RS485_TX_PIN);
-    xTaskCreatePinnedToCore(WS2812Task, "WS2812Task", 1024, NULL, 2, NULL, 1);
+  //Setup HTTP endpoints
+  setup_ota_update();
+  setup_screen_endpoints();
+  captive_portal_setup();
+  //RGB led fading, just because we can
+  xTaskCreatePinnedToCore(WS2812Task, "WS2812Task", 1024, NULL, 2, NULL, 1);
 }
 
-static int i=0;
 void loop()
 {
   delay(10);

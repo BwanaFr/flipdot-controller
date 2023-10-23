@@ -41,10 +41,11 @@ private:
     uint8_t address_;
     uint8_t width_;
     uint8_t height_;
-
-
-    void addHeader(uint8_t* buffer, int& pos, uint8_t mode=0xa2);
-    void addCheckSum(uint8_t* buffer, int& pos);
+    int checksum_;
+    void startTransaction(uint8_t mode=0xa2);
+    void endTransaction();
+    void sendSerial(uint8_t byte, bool addChk=true);
+    void sendScreenSize();
 };
 
 

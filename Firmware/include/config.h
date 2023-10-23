@@ -18,8 +18,12 @@
 #define SD_SCLK_PIN 14
 #define SD_CS_PIN 13
 
-#define WS2812_PIN 4
+//Buildin RGB led
+#define LEDS_COUNT 1
+#define LEDS_PIN 4
+#define CHANNEL 0
 
+//Relays to control power supplies
 #define SCREEN_PWR_PIN 18
 #define BACKLIGHT_PWR_PIN 5
 
