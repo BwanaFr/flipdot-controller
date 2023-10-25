@@ -26,34 +26,6 @@ void WS2812Task(void *params);
 static size_t otaContentLenght=0;                    // Size of the OTA update file
 
 /**
- * Sets the screen backlight on
-*/
-inline void backLightOn(){
-  digitalWrite(BACKLIGHT_PWR_PIN, LOW);
-}
-
-/**
- * Sets the screen backlight off
-*/
-inline void backLightOff(){
-  digitalWrite(BACKLIGHT_PWR_PIN, HIGH);
-}
-
-/**
- * Sets the screen power supply on
-*/
-inline void screenOn(){
-  digitalWrite(SCREEN_PWR_PIN, LOW);
-}
-
-/**
- * Sets the screen power supply off
-*/
-inline void screenOff(){
-  digitalWrite(SCREEN_PWR_PIN, HIGH);
-}
-
-/**
  * Callback to get captive-portal messages
 */
 void captive_portal_message(const char* msg, ESPEasyCfgMessageType type) {
@@ -167,28 +139,15 @@ void setup_screen_endpoints(){
     if(request->hasParam("on")){
       blOn = true;
     }
-    if(blOn){
-      backLightOn();
-    }else{
-      backLightOff();
-    }
+    screen.setBackLight(blOn);
     String blOnText = (blOn ? "on" : "off");
     request->send(200, "text/plain", "Backlight is " + blOnText);
   });
 
-  //Sets the screen power-supply on/off
-  server.on("/screen", HTTP_GET, [] (AsyncWebServerRequest *request) {
-    bool scrOn = false;
-    if(request->hasParam("on")){
-      scrOn = true;
-    }
-    if(scrOn){
-      screenOn();
-    }else{
-      screenOff();
-    }
-    String srcOnText = (scrOn ? "on" : "off");
-    request->send(200, "text/plain", "Screen is " + srcOnText);
+  //Put all pixels on
+  server.on("/white", HTTP_GET, [] (AsyncWebServerRequest *request) {
+    screen.allWhite();
+    request->send(200, "text/plain", "ok");
   });
 }
 
@@ -196,24 +155,8 @@ void setup()
 {
   Serial.begin(115200);
 
-  //Enable RS485 transceiver
-  pinMode(RS485_EN_PIN, OUTPUT);
-  digitalWrite(RS485_EN_PIN, HIGH);
-
-  pinMode(RS485_SE_PIN, OUTPUT);
-  digitalWrite(RS485_SE_PIN, HIGH);
-
-  pinMode(PIN_5V_EN, OUTPUT);
-  digitalWrite(PIN_5V_EN, HIGH);
-
-  //Setup relays for switching power
-  pinMode(SCREEN_PWR_PIN, OUTPUT);
-  pinMode(BACKLIGHT_PWR_PIN, OUTPUT);
-  //Sets backlight off
-  backLightOff();
-  //Enable screen
-  screenOn();
   //Setup screen
+  screen.setPowerTimeout(600);
   screen.begin(RS485_RX_PIN, RS485_TX_PIN);
 
   //Setup HTTP endpoints
@@ -227,6 +170,14 @@ void setup()
 void loop()
 {
   delay(10);
+  screen.loop();
+  /*Screen::TransactionStart tr;
+  tr.fields.address = 0x6;
+  tr.fields.mode = 0xab;
+  Serial.printf("Size of transaction : %d\n", sizeof(Screen::TransactionStart));
+  for(int i=0;i<sizeof(Screen::TransactionStart);++i){
+    Serial.printf("Data[%d] = 0x%02x\n", i, tr.data[i]);
+  }*/
 }
 
 void WS2812Task(void *params)
