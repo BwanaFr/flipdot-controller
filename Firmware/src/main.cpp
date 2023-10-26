@@ -114,8 +114,11 @@ void setup_screen_endpoints(){
     if(request->hasParam("text")){
       text = request->getParam("text")->value();
     }
-    screen.sendText(text.c_str(), std::atoi(x.c_str()), std::atoi(y.c_str()));
-    request->send(200, "text/plain", "X: " + x + " Y: " + y + " Text : " + text);
+    if(screen.sendText(text.c_str(), std::atoi(x.c_str()), std::atoi(y.c_str()))){
+      request->send(200, "text/plain", "X: " + x + " Y: " + y + " Text : " + text);
+    }else{
+      request->send(429, "text/plain", "System is busy");
+    }
   });
 
   //Raw binary data (for tests)

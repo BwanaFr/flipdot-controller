@@ -8,6 +8,54 @@
 #define DATA_BUFFER_SIZE 1024
 #define DATA_BUFFER_COUNT 2
 
+//Ring buffer code from https://landenlabs.com/code/ring/ring.html
+template <class T, size_t RingSize>
+class RingBuffer
+{
+public:
+    RingBuffer(size_t size = 100)
+        : m_size(size), m_buffer(new T[size]), m_rIndex(0), m_wIndex(0)
+        { assert(size > 1 && m_buffer != NULL); }
+
+    ~RingBuffer()
+        { delete [] m_buffer; };
+
+    size_t Next(size_t n) const
+        { return (n+1)%m_size; }
+    bool Empty() const
+        { return (m_rIndex == m_wIndex); }
+    bool Full() const
+        { return (Next(m_wIndex) == m_rIndex); }
+
+    bool Put(const T& value)
+    {
+        if (Full())
+            return false;
+        m_buffer[m_wIndex] = value;
+        m_wIndex = Next(m_wIndex);
+        return true;
+    }
+
+    bool Get(T& value)
+    {
+        if (Empty())
+            return false;
+        value = m_buffer[m_rIndex];
+        m_rIndex = Next(m_rIndex);
+        return true;
+    }
+
+private:
+    T*              m_buffer;
+    size_t          m_size;
+
+    // volatile is only used to keep compiler from placing values in registers.
+    // volatile does NOT make the index thread safe.
+    volatile size_t m_rIndex;
+    volatile size_t m_wIndex;
+};
+
+
 class Screen {
 public:
     /**
@@ -36,19 +84,22 @@ public:
      * @param x Horizontal offset in pixels
      * @param y Vertical offset in pixels
      * @param font Font selection
+     * @return false On error
     */
-    void sendText(const char* text, uint8_t x=0, uint8_t y=0, uint8_t font=0x73);
+    bool sendText(const char* text, uint8_t x=0, uint8_t y=0, uint8_t font=0x73);
 
     /**
      * Send raw values (debugging)
      * Raw values doesn't contains checksum, address and first 0xff
+    * @return false On error
     */
-    void sendRaw(const uint8_t* data, int dataLen);
+    bool sendRaw(const uint8_t* data, int dataLen);
 
     /**
      * Sets the screen will all dots
+     * @return false On error
     */
-    void allWhite();
+    bool allWhite();
 
     /**
      * Sets the number of seconds before switching the screen off
@@ -64,8 +115,6 @@ public:
      * Sets backlight on/off
      **/
     void setBackLight(bool on);
-
-
 
 private:
 
@@ -91,11 +140,9 @@ private:
     uint8_t backlightPin_;
     unsigned long lastUsed_;
     //Buffer for storing data
-    SemaphoreHandle_t readSemaphore_;
-    SemaphoreHandle_t writeSemaphore_;
-    DataPacket buffers_[DATA_BUFFER_COUNT];
-    int readPos_;
-    int writePos_;
+    SemaphoreHandle_t semaphore_;
+    bool dataAvailable_;
+    DataPacket buffer_;
 
     /**
      * Append mode to packet

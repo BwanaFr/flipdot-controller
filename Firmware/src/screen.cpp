@@ -5,10 +5,9 @@ Screen::Screen(HardwareSerial& serial, uint8_t address, uint8_t width, uint8_t h
                 uint8_t powerPin, int pwrSaveTime, uint8_t backlightPin) :
     serial_(serial), address_(address), width_(width), height_(height),
     powerPin_(powerPin), pwrSaveTime_(pwrSaveTime), backlightPin_(backlightPin),
-    readSemaphore_(nullptr), writeSemaphore_(nullptr), buffers_(), readPos_(-1), writePos_(0)
+    semaphore_(nullptr), dataAvailable_(false)
 {
-    readSemaphore_ = xSemaphoreCreateMutex();
-    writeSemaphore_ = xSemaphoreCreateMutex();
+    semaphore_ = xSemaphoreCreateMutex();
 }
 
 void Screen::begin(int8_t rxPin, int8_t txPin)
@@ -36,73 +35,57 @@ void Screen::sendSerial(uint8_t byte)
     serial_.write(byte);
     //Discard received bytes
     while(serial_.available()){
-        serial_.flush();
+        serial_.read();
     }
 }
 
-void Screen::sendText(const char* text, uint8_t x, uint8_t y, uint8_t font)
+bool Screen::sendText(const char* text, uint8_t x, uint8_t y, uint8_t font)
 {
-    if(xSemaphoreTake(writeSemaphore_, portMAX_DELAY) == pdTRUE)
+    if(xSemaphoreTake(semaphore_, pdMS_TO_TICKS(5)) == pdTRUE)
     {
-        DataPacket& writePacket = buffers_[writePos_];
         //Set text mode
-        appendMode(writePacket, 0xa2);
+        appendMode(buffer_, 0xa2);
         //Sets screen size (Not needed?)
-        appendScreenSize(writePacket, width_, height_);
+        appendScreenSize(buffer_, width_, height_);
         //Sets text coordinates
-        appendCoordinates(writePacket, x, y);
+        appendCoordinates(buffer_, x, y);
         //Sets font
-        appendFont(writePacket, font);
+        appendFont(buffer_, font);
         //Set text
-        appendText(writePacket, text);
-
-        //Sets the read index
-        xSemaphoreTake(readSemaphore_, portMAX_DELAY);
-            readPos_ = writePos_;
-        xSemaphoreGive(readSemaphore_);
-
-        if(++writePos_ > DATA_BUFFER_COUNT){
-            //Move to first
-            writePos_ = 0;
-        }
-        xSemaphoreGive(writeSemaphore_);
+        appendText(buffer_, text);
+        dataAvailable_ = true;
+        xSemaphoreGive(semaphore_);
+        return true;
     }
+    return false;
 }
 
-void Screen::sendRaw(const uint8_t* data, int dataLen)
+bool Screen::sendRaw(const uint8_t* data, int dataLen)
 {
-    if(xSemaphoreTake(writeSemaphore_, portMAX_DELAY) == pdTRUE)
+    if(xSemaphoreTake(semaphore_, pdMS_TO_TICKS(5)) == pdTRUE)
     {
-        DataPacket& writePacket = buffers_[writePos_];
         //Copy raw packet
-        writePacket.count = 0;
+        buffer_.count = 0;
         for(int i=0;i<dataLen;++i){
-            writePacket << data[i];
+            buffer_ << data[i];
         }
-        //Sets the read index
-        xSemaphoreTake(readSemaphore_, portMAX_DELAY);
-            readPos_ = writePos_;
-        xSemaphoreGive(readSemaphore_);
-
-        if(++writePos_ > DATA_BUFFER_COUNT){
-            //Move to first
-            writePos_ = 0;
-        }
-        xSemaphoreGive(writeSemaphore_);
+        dataAvailable_ = true;
+        xSemaphoreGive(semaphore_);
+        return true;
     }
+    return false;
 }
 
-void Screen::allWhite()
+bool Screen::allWhite()
 {
-    if(xSemaphoreTake(writeSemaphore_, portMAX_DELAY) == pdTRUE)
+    if(xSemaphoreTake(semaphore_, pdMS_TO_TICKS(5)) == pdTRUE)
     {
-        DataPacket& writePacket = buffers_[writePos_];
         //Set text mode
-        appendMode(writePacket, 0xa2);
+        appendMode(buffer_, 0xa2);
         //Sets screen size (Not needed?)
-        appendScreenSize(writePacket, width_, height_);
+        appendScreenSize(buffer_, width_, height_);
         //Sets graphics font
-        appendFont(writePacket, 0x77);
+        appendFont(buffer_, 0x77);
 
         //Fill binary buffer
         int rowCount = height_/5;
@@ -110,30 +93,23 @@ void Screen::allWhite()
             ++rowCount;
         }
         for(int row = 0;row<(rowCount+1);++row){
-            appendCoordinates(writePacket, 0, row > 0 ? ((row * 5) - 1) : 0);
+            appendCoordinates(buffer_, 0, row > 0 ? ((row * 5) - 1) : 0);
             for(int x=0;x<width_;++x){
-                writePacket << (0x20 | 0x1F);
+                buffer_ << (0x20 | 0x1F);
             }
         }
-
-        //Sets the read index
-        xSemaphoreTake(readSemaphore_, portMAX_DELAY);
-            readPos_ = writePos_;
-        xSemaphoreGive(readSemaphore_);
-
-        if(++writePos_ > DATA_BUFFER_COUNT){
-            //Move to first
-            writePos_ = 0;
-        }
-        xSemaphoreGive(writeSemaphore_);
+        dataAvailable_ = true;
+        xSemaphoreGive(semaphore_);
+        return true;
     }
+    return false;
 }
 
 void Screen::loop()
 {
-    if(xSemaphoreTake(readSemaphore_, (TickType_t)10) == pdTRUE)
+    if(xSemaphoreTake(semaphore_, (TickType_t)10) == pdTRUE)
     {
-        if(readPos_ > -1){
+        if(dataAvailable_){
             if(digitalRead(powerPin_)){
                 //Screen is off, power it
                 digitalWrite(powerPin_, LOW);
@@ -141,10 +117,12 @@ void Screen::loop()
                 delay(500);
             }
             lastUsed_ = millis();
-            sendToSerial(buffers_[readPos_]);
-            readPos_ = -1;
+            Serial.printf("Sending %d bytes\n", buffer_.count);
+            sendToSerial(buffer_);
+            dataAvailable_ = false;
+            Serial.println("Loop executed");
         }
-        xSemaphoreGive(readSemaphore_);
+        xSemaphoreGive(semaphore_);
     }
     //Power off screen if timeout
     if(!digitalRead(powerPin_) && (pwrSaveTime_ > 0)){
@@ -204,7 +182,6 @@ void Screen::appendText(DataPacket& packet, const char* text)
 void Screen::sendToSerial(DataPacket& packet)
 {
     int chkSum = address_;
-    Serial.println();
     //Start of data
     sendSerial(0xff);
     sendSerial(address_);
@@ -227,5 +204,4 @@ void Screen::sendToSerial(DataPacket& packet)
         sendSerial(chk);
     }
     sendSerial(0xff);
-    Serial.println();
 }
