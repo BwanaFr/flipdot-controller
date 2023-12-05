@@ -114,7 +114,7 @@ void setup_screen_endpoints(){
     if(request->hasParam("text")){
       text = request->getParam("text")->value();
     }
-    if(screen.sendText(text.c_str(), std::atoi(x.c_str()), std::atoi(y.c_str()))){
+    if(screen.sendText(text.c_str(), std::atoi(x.c_str()), std::atoi(y.c_str()), 0x65)){
       request->send(200, "text/plain", "X: " + x + " Y: " + y + " Text : " + text);
     }else{
       request->send(429, "text/plain", "System is busy");

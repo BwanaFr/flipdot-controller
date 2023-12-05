@@ -5,56 +5,11 @@
 #include <HardwareSerial.h>
 #include "config.h"
 
+#ifndef DATA_BUFFER_SIZE
 #define DATA_BUFFER_SIZE 1024
-#define DATA_BUFFER_COUNT 2
+#endif
 
-//Ring buffer code from https://landenlabs.com/code/ring/ring.html
-template <class T, size_t RingSize>
-class RingBuffer
-{
-public:
-    RingBuffer(size_t size = 100)
-        : m_size(size), m_buffer(new T[size]), m_rIndex(0), m_wIndex(0)
-        { assert(size > 1 && m_buffer != NULL); }
-
-    ~RingBuffer()
-        { delete [] m_buffer; };
-
-    size_t Next(size_t n) const
-        { return (n+1)%m_size; }
-    bool Empty() const
-        { return (m_rIndex == m_wIndex); }
-    bool Full() const
-        { return (Next(m_wIndex) == m_rIndex); }
-
-    bool Put(const T& value)
-    {
-        if (Full())
-            return false;
-        m_buffer[m_wIndex] = value;
-        m_wIndex = Next(m_wIndex);
-        return true;
-    }
-
-    bool Get(T& value)
-    {
-        if (Empty())
-            return false;
-        value = m_buffer[m_rIndex];
-        m_rIndex = Next(m_rIndex);
-        return true;
-    }
-
-private:
-    T*              m_buffer;
-    size_t          m_size;
-
-    // volatile is only used to keep compiler from placing values in registers.
-    // volatile does NOT make the index thread safe.
-    volatile size_t m_rIndex;
-    volatile size_t m_wIndex;
-};
-
+//#define DATA_BUFFER_COUNT 2
 
 class Screen {
 public:
@@ -140,9 +95,13 @@ private:
     uint8_t backlightPin_;
     unsigned long lastUsed_;
     //Buffer for storing data
-    SemaphoreHandle_t semaphore_;
-    bool dataAvailable_;
-    DataPacket buffer_;
+    SemaphoreHandle_t writeSemaphore_;
+#ifdef DATA_BUFFER_COUNT
+    SemaphoreHandle_t readSemaphore_;
+    DataPacket buffers_[DATA_BUFFER_COUNT];
+    int readPos_;
+    int writePos_;
+#endif
 
     /**
      * Append mode to packet
