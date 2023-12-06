@@ -1,4 +1,5 @@
 Captures/*
+*.DS_Store*
 
 # Temporary files
 *.000
