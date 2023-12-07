@@ -1808,7 +1808,7 @@
   )
 
   (symbol (lib_id "Device:R") (at 76.073 77.724 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (dnp yes) (fields_autoplaced)
     (uuid 3fa76829-62bf-41ca-8f21-d4d037a8c8b7)
     (property "Reference" "R38" (at 77.851 76.5119 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -2256,7 +2256,7 @@
   )
 
   (symbol (lib_id "Connector_Generic:Conn_01x06") (at 50.546 92.329 180) (unit 1)
-    (in_bom yes) (on_board yes) (dnp yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (dnp yes) (fields_autoplaced)
     (uuid b68adf07-b8eb-476c-b2b2-3863a69e19ae)
     (property "Reference" "J8" (at 50.546 79.2947 0)
       (effects (font (size 1.27 1.27)))
@@ -2452,7 +2452,7 @@
   )
 
   (symbol (lib_id "Device:R") (at 64.135 77.597 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp yes) (fields_autoplaced)
+    (in_bom no) (on_board yes) (dnp yes) (fields_autoplaced)
     (uuid d36da23a-494c-4e5a-b82a-c505b930e6ef)
     (property "Reference" "R37" (at 65.913 76.3849 0)
       (effects (font (size 1.27 1.27)) (justify left))

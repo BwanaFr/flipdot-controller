@@ -1912,7 +1912,7 @@
   )
 
   (symbol (lib_id "Connector:TestPoint") (at 37.719 34.163 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (in_bom no) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 78ed7b4c-643e-4036-bd01-8acdff3453a9)
     (property "Reference" "TP2" (at 39.116 29.6489 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -1969,7 +1969,7 @@
   )
 
   (symbol (lib_id "Connector:TestPoint") (at 37.846 40.64 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (in_bom no) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 7d436bae-5f15-4011-b8a9-e28ec1725b4c)
     (property "Reference" "TP3" (at 39.243 36.1259 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -2256,7 +2256,7 @@
   )
 
   (symbol (lib_id "Connector:TestPoint") (at 37.719 27.432 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (in_bom no) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid ab05dfa4-bc94-47b1-8e26-80e7e2749a5e)
     (property "Reference" "TP1" (at 39.116 22.9179 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -2334,7 +2334,7 @@
   )
 
   (symbol (lib_id "Connector:TestPoint") (at 37.973 46.99 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (in_bom no) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid c52a42ba-f848-4a48-8663-af3d3234f107)
     (property "Reference" "TP4" (at 39.37 42.4759 0)
       (effects (font (size 1.27 1.27)) (justify left))

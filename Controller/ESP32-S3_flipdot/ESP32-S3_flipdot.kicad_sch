@@ -371,7 +371,7 @@
   )
 
   (symbol (lib_id "Mechanical:MountingHole_Pad") (at 105.791 172.593 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (in_bom no) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 24854d1c-ce25-401d-8b38-ccfd1db2324e)
     (property "Reference" "H4" (at 108.331 170.1109 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -396,7 +396,7 @@
   )
 
   (symbol (lib_id "Mechanical:MountingHole_Pad") (at 129.032 173.228 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (in_bom no) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 39189167-f3df-4464-bcdc-726eafbfab0d)
     (property "Reference" "H2" (at 131.572 170.7459 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -506,7 +506,7 @@
   )
 
   (symbol (lib_id "Mechanical:MountingHole_Pad") (at 129.032 160.401 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (in_bom no) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid 891ccdae-1505-40d7-b7da-e57698242761)
     (property "Reference" "H1" (at 131.572 157.9189 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -545,7 +545,7 @@
     (property "Datasheet" "~" (at 58.42 162.56 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (property "LCSC" "C5157144" (at 58.42 162.56 0)
+    (property "LCSC" "C709041" (at 58.42 162.56 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (pin "1" (uuid d9387625-66b5-45b3-a9c6-d48f729819b0))
@@ -638,7 +638,7 @@
   )
 
   (symbol (lib_id "Mechanical:MountingHole_Pad") (at 105.537 159.766 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no) (fields_autoplaced)
+    (in_bom no) (on_board yes) (dnp no) (fields_autoplaced)
     (uuid c1906af2-845e-40a3-b5ca-48ff23e47058)
     (property "Reference" "H3" (at 108.077 157.2839 0)
       (effects (font (size 1.27 1.27)) (justify left))
