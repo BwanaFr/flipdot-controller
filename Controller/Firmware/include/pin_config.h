@@ -13,6 +13,6 @@
 //Backlight DC/DC control
 #define BACKLIGHT 48
 //Onboard LED
-#define LED 17
+#define LED 14
 
 #endif

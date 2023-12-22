@@ -2321,7 +2321,7 @@
       (net 98 "Net-(J3-Pin_25)") (pinfunction "Pin_25") (pintype "passive") (tstamp 2b22351e-db23-42a0-8667-5d43284fe5df))
     (pad "26" thru_hole circle (at 2.54 30.48 270) (size 1.7 1.7) (drill 1) (layers "*.Cu" "*.Mask")
       (net 3 "Vdrive") (pinfunction "Pin_26") (pintype "passive") (tstamp 10e863af-e877-4e24-8cf4-beb35906667c))
-    (model "${KICAD6_3DMODEL_DIR}/Connector_IDC.3dshapes/IDC-Header_2x13_P2.54mm_Latch_Horizontal.wrl"
+    (model "${KICAD7_3DMODEL_DIR}/Connector_IDC.3dshapes/IDC-Header_2x13_P2.54mm_Horizontal.step"
       (offset (xyz 0 0 0))
       (scale (xyz 1 1 1))
       (rotate (xyz 0 0 0))
@@ -4263,7 +4263,7 @@
     (at 148.225 77.8 180)
     (descr "Light Touch Switch, https://industrial.panasonic.com/cdbs/www-data/pdf/ATK0000/ATK0000C374.pdf")
     (tags "SMD SMT SPST EVQP2")
-    (property "LCSC" "C512395")
+    (property "LCSC" "C528967")
     (property "Sheetfile" "esp32.kicad_sch")
     (property "Sheetname" "ESP32")
     (property "ki_description" "Push button switch, generic, two pins")
@@ -4706,7 +4706,7 @@
     (at 162.125 77.85 180)
     (descr "Light Touch Switch, https://industrial.panasonic.com/cdbs/www-data/pdf/ATK0000/ATK0000C374.pdf")
     (tags "SMD SMT SPST EVQP2")
-    (property "LCSC" "C512395")
+    (property "LCSC" "C528967")
     (property "Sheetfile" "esp32.kicad_sch")
     (property "Sheetname" "ESP32")
     (property "ki_description" "Push button switch, generic, two pins")

@@ -33,16 +33,14 @@
         "arduino",
         "espidf"
     ],
-    "name": "FLIPDOT S3",
+    "name": "LILYGO T3-S3",
     "upload": {
         "flash_size": "16MB",
         "maximum_ram_size": 327680,
         "maximum_size": 16777216,
-        "use_1200bps_touch": true,
-        "wait_for_upload_port": true,
         "require_upload_port": true,
-        "speed": 460800
+        "speed": 921600
     },
-    "url": "https://github.com/BwanaFr/flipdot-controller",
-    "vendor": "BwanaFr"
+    "url": "https://www.aliexpress.us/item/3256804591247074.html",
+    "vendor": "LILYGO"
 }
